@@ -1,0 +1,64 @@
+﻿#include <windows.h>
+#include "resource.h"
+#include "../../../generated/Version.h"
+
+IDI_APP_ICON ICON "VisualMediaPlayer.ico"
+
+IDR_RESOLUTION_4K_PNG PNG "resolution_4k.png"
+IDR_RESOLUTION_5K_PNG PNG "resolution_5k.png"
+IDR_RESOLUTION_8K_PNG PNG "resolution_8k.png"
+IDR_VR_PNG PNG "vr.png"
+IDR_FAVORITE_PNG PNG "favorite.png"
+
+1 VERSIONINFO
+ FILEVERSION VMP_VERSION_FILE
+ PRODUCTVERSION VMP_VERSION_FILE
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Visual MediaPlayer\0"
+            VALUE "FileDescription", "Visual MediaPlayer\0"
+            VALUE "FileVersion", VMP_VERSION_RC_STR
+            VALUE "InternalName", "VisualMediaPlayer\0"
+            VALUE "OriginalFilename", "VisualMediaPlayer.exe\0"
+            VALUE "ProductName", "Visual MediaPlayer\0"
+            VALUE "ProductVersion", VMP_VERSION_RC_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
+
+IDR_AUTONEXT_SVG RCDATA "AutoNext_Button.svg"
+IDR_OPEN_FOLDER_SVG RCDATA "OpenFolder_Button.svg"
+IDR_RELOAD_SVG RCDATA "Reload_Button.svg"
+IDR_LOAD_EVERYTHING_SVG RCDATA "LoadEverything_Button.svg"
+IDR_EXPAND_FULLSCREEN_SVG RCDATA "Expand_Button_Fullscreen.svg"
+IDR_COLLAPSE_FULLSCREEN_SVG RCDATA "Collapse_Button_Fullscreen.svg"
+IDR_BACK_SVG RCDATA "Back_Button.svg"
+IDR_IMAGE_SVG RCDATA "Image_Button.svg"
+IDR_VIDEOS_SVG RCDATA "Videos_Button.svg"
+IDR_NATIVE_SVG RCDATA "Native_Button.svg"
+IDR_PREVIOUS_SVG RCDATA "Previous_Button.svg"
+IDR_NEXT_SVG RCDATA "Next_Button.svg"
+IDR_VOLUME_SVG RCDATA "Volume_Icon.svg"
+IDR_VOLUME_MUTE_SVG RCDATA "Volume_Mute_Icon.svg"
+IDR_SKIP30_SVG RCDATA "Skip30sec_Button.svg"
+IDR_PAUSE_SVG RCDATA "Pause_Button_PopupMenu.svg"
+IDR_PLAY_SVG RCDATA "Play_Button_PopupMenu.svg"
+IDR_VR_PROJECTION_SVG RCDATA "VRProjection_Button.svg"
+
+

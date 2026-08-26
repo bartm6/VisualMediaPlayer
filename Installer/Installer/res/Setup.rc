@@ -1,0 +1,60 @@
+﻿#include <windows.h>
+#include "resource.h"
+#include "../../../generated/Version.h"
+
+IDI_APP_ICON ICON "VisualMediaPlayer.ico"
+IDR_APP_PAYLOAD RCDATA "..\\payload\\VisualMediaPlayer.exe"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION VMP_VERSION_FILE
+ PRODUCTVERSION VMP_VERSION_FILE
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Visual MediaPlayer\0"
+            VALUE "FileDescription", "Visual MediaPlayer Setup\0"
+            VALUE "FileVersion", VMP_VERSION_RC_STR
+            VALUE "InternalName", "VisualMediaPlayerSetup\0"
+            VALUE "OriginalFilename", "VisualMediaPlayerSetup.exe\0"
+            VALUE "ProductName", "Visual MediaPlayer\0"
+            VALUE "ProductVersion", VMP_VERSION_RC_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
+
+IDR_BUTTON_ASSET_0 RCDATA "..\\..\\ButtonAssets\\README.txt"
+IDR_BUTTON_ASSET_1 RCDATA "..\\..\\ButtonAssets\\Background_Active.slot"
+IDR_BUTTON_ASSET_2 RCDATA "..\\..\\ButtonAssets\\Background_Inactive.slot"
+IDR_BUTTON_ASSET_3 RCDATA "..\\..\\ButtonAssets\\AutoNext.slot"
+IDR_BUTTON_ASSET_4 RCDATA "..\\..\\ButtonAssets\\Back.slot"
+IDR_BUTTON_ASSET_5 RCDATA "..\\..\\ButtonAssets\\FullscreenExit.slot"
+IDR_BUTTON_ASSET_6 RCDATA "..\\..\\ButtonAssets\\FullscreenEnter.slot"
+IDR_BUTTON_ASSET_7 RCDATA "..\\..\\ButtonAssets\\Image.slot"
+IDR_BUTTON_ASSET_8 RCDATA "..\\..\\ButtonAssets\\LoadEverything.slot"
+IDR_BUTTON_ASSET_9 RCDATA "..\\..\\ButtonAssets\\Native.slot"
+IDR_BUTTON_ASSET_10 RCDATA "..\\..\\ButtonAssets\\Next.slot"
+IDR_BUTTON_ASSET_11 RCDATA "..\\..\\ButtonAssets\\OpenFolder.slot"
+IDR_BUTTON_ASSET_12 RCDATA "..\\..\\ButtonAssets\\Pause.slot"
+IDR_BUTTON_ASSET_13 RCDATA "..\\..\\ButtonAssets\\Play.slot"
+IDR_BUTTON_ASSET_14 RCDATA "..\\..\\ButtonAssets\\Previous.slot"
+IDR_BUTTON_ASSET_15 RCDATA "..\\..\\ButtonAssets\\Refresh.slot"
+IDR_BUTTON_ASSET_16 RCDATA "..\\..\\ButtonAssets\\Rewind.slot"
+IDR_BUTTON_ASSET_17 RCDATA "..\\..\\ButtonAssets\\Forward.slot"
+IDR_BUTTON_ASSET_18 RCDATA "..\\..\\ButtonAssets\\Video.slot"
+IDR_BUTTON_ASSET_19 RCDATA "..\\..\\ButtonAssets\\Volume.slot"
+IDR_BUTTON_ASSET_20 RCDATA "..\\..\\ButtonAssets\\VolumeMute.slot"
