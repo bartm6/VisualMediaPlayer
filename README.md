@@ -27,6 +27,7 @@ Browsing data such as thumbnails and timeline previews is stored separately in a
 - Image zoom, pan, slideshow, and Native Size.
 - Favorites, search, folder navigation, and previous/next navigation.
 - Fullscreen Library, Info, and Player modes.
+- Always-on-top window toggle available in Library, Info, and Player.
 - **Load Everything** for pre-generating reusable Library/Info cache data.
 - Portable and Installer builds.
 - Windows **Open with Visual MediaPlayer** integration for the installed edition.
@@ -58,8 +59,11 @@ With the **installed edition**, you can also open supported files through File E
 | `F11` | Toggle fullscreen |
 | `Esc` | Context-sensitive Back / reset |
 | Drag title bar | Move the application window |
+| **Always on Top button** | Keep the VMP window above other normal windows until toggled off |
 
 `Esc` resolves the current state first. For example, it resets flat-video zoom/pan before leaving Player and closes Library search before navigating back.
+
+The **Always on Top** toggle is available in the Library, Info, and Player footers while windowed. It is hidden in fullscreen, where a separate topmost control is unnecessary. The active state uses the same bright toggled-button treatment as the other toggleable controls. Its state is preserved while entering/exiting fullscreen and while navigating between views until you toggle it off or close the application.
 
 ## Library
 
