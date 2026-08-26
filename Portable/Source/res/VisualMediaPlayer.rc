@@ -60,5 +60,6 @@ IDR_SKIP30_SVG RCDATA "Skip30sec_Button.svg"
 IDR_PAUSE_SVG RCDATA "Pause_Button_PopupMenu.svg"
 IDR_PLAY_SVG RCDATA "Play_Button_PopupMenu.svg"
 IDR_VR_PROJECTION_SVG RCDATA "VRProjection_Button.svg"
+IDR_ALWAYS_ON_TOP_SVG RCDATA "AlwaysOnTop_Button.svg"
 
 
