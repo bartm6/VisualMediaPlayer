@@ -19,6 +19,7 @@ Background_Active      used by selected/toggled controls
 Background_Inactive    used by normal controls
 
 ICON SLOTS
+AlwaysOnTop
 AutoNext
 Back
 FullscreenExit

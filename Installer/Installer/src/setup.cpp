@@ -288,6 +288,7 @@ bool InstallButtonAssets(const std::wstring& installDir) {
         {IDR_BUTTON_ASSET_18,L"Video.slot"},
         {IDR_BUTTON_ASSET_19,L"Volume.slot"},
         {IDR_BUTTON_ASSET_20,L"VolumeMute.slot"},
+        {IDR_BUTTON_ASSET_21,L"AlwaysOnTop.slot"},
     };
     for(const auto& asset:assets){
         if(!WriteResourceToFileIfMissing(asset.id,JoinPath(assetDir,asset.name))) return false;

@@ -58,3 +58,5 @@ IDR_BUTTON_ASSET_17 RCDATA "..\\..\\ButtonAssets\\Forward.slot"
 IDR_BUTTON_ASSET_18 RCDATA "..\\..\\ButtonAssets\\Video.slot"
 IDR_BUTTON_ASSET_19 RCDATA "..\\..\\ButtonAssets\\Volume.slot"
 IDR_BUTTON_ASSET_20 RCDATA "..\\..\\ButtonAssets\\VolumeMute.slot"
+
+IDR_BUTTON_ASSET_21 RCDATA "..\\..\\ButtonAssets\\AlwaysOnTop.slot"

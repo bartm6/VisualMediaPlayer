@@ -3562,7 +3562,7 @@ private:
         libraryD2dResolution4k_.Reset();
         libraryD2dResolution5k_.Reset();
         libraryD2dResolution8k_.Reset();
-        libraryD2dAutoNextSvg_.Reset();libraryD2dOpenFolderSvg_.Reset();libraryD2dReloadSvg_.Reset();libraryD2dLoadEverythingSvg_.Reset();
+        libraryD2dAlwaysOnTopSvg_.Reset();libraryD2dAutoNextSvg_.Reset();libraryD2dOpenFolderSvg_.Reset();libraryD2dReloadSvg_.Reset();libraryD2dLoadEverythingSvg_.Reset();
         libraryD2dExpandFullscreenSvg_.Reset();libraryD2dCollapseFullscreenSvg_.Reset();libraryD2dBackSvg_.Reset();libraryD2dImageSvg_.Reset();libraryD2dVideosSvg_.Reset();
         libraryD2dNativeSvg_.Reset();libraryD2dPreviousSvg_.Reset();libraryD2dNextSvg_.Reset();libraryD2dPlaySvg_.Reset();
         libraryD2dButtonBackgroundActive_.Reset();libraryD2dButtonBackgroundInactive_.Reset();
@@ -3837,6 +3837,10 @@ private:
         else DrawLibraryGpuSvgIconButton(r,expandFullscreenSvgBitmap_.get(),libraryD2dExpandFullscreenSvg_,false,6);
     }
 
+    void DrawLibraryGpuAlwaysOnTopButton(RECT r) {
+        DrawLibraryGpuSvgIconButton(r,alwaysOnTopSvgBitmap_.get(),libraryD2dAlwaysOnTopSvg_,alwaysOnTop_,6);
+    }
+
     void DrawLibraryGpuAutoAdvance(RECT r,bool active) {
         DrawLibraryGpuSvgIconButton(r,autoNextSvgBitmap_.get(),libraryD2dAutoNextSvg_,active,5);
     }
@@ -3909,6 +3913,11 @@ private:
         const int iconButtonBottom=rc.bottom-10,iconButtonTop=iconButtonBottom-iconW;
         int navLeft=20;
         if(!IsAtLibraryRoot()){backRect_={20,iconButtonTop,20+iconW,iconButtonBottom};DrawLibraryGpuSvgIconButton(backRect_,backSvgBitmap_.get(),libraryD2dBackSvg_,false,5);navLeft=backRect_.right+10;}else backRect_=RECT{};
+        if(!fullscreen_){
+            libraryAlwaysOnTopRect_={navLeft,iconButtonTop,navLeft+iconW,iconButtonBottom};
+            DrawLibraryGpuAlwaysOnTopButton(libraryAlwaysOnTopRect_);
+            navLeft=libraryAlwaysOnTopRect_.right+10;
+        }else libraryAlwaysOnTopRect_=RECT{};
         categoryToggleRect_={navLeft,iconButtonTop,navLeft+iconW,iconButtonBottom};
         if(category_==Category::Videos) DrawLibraryGpuSvgIconButton(categoryToggleRect_,videosSvgBitmap_.get(),libraryD2dVideosSvg_,false,5);
         else DrawLibraryGpuSvgIconButton(categoryToggleRect_,imageSvgBitmap_.get(),libraryD2dImageSvg_,false,5);
@@ -4205,13 +4214,20 @@ private:
 
         detailsFooterRect_=RECT{0,footerTop,rc.right,rc.bottom};FillLibraryGpuRectAlpha(detailsFooterRect_,RGB(16,19,25),238.0f/255.0f);DrawLibraryGpuLine(0.0f,static_cast<float>(footerTop),static_cast<float>(rc.right),static_cast<float>(footerTop),RGB(42,47,60),1);
         backRect_={20,rc.bottom-58,68,rc.bottom-10};DrawLibraryGpuSvgIconButton(backRect_,backSvgBitmap_.get(),libraryD2dBackSvg_,false,5);
-        if(item.isVideo){imageDetailsSlideshowRect_=RECT{};const int gap=10;playRect_={backRect_.right+gap,backRect_.top,backRect_.right+gap+48,backRect_.bottom};DrawLibraryGpuSvgIconButton(playRect_,playSvgBitmap_.get(),libraryD2dPlaySvg_,false,6);}else playRect_=RECT{};
+        int detailsLeftCursor=backRect_.right+10;
+        if(!fullscreen_){
+            detailsAlwaysOnTopRect_={detailsLeftCursor,backRect_.top,detailsLeftCursor+48,backRect_.bottom};
+            DrawLibraryGpuAlwaysOnTopButton(detailsAlwaysOnTopRect_);
+            detailsLeftCursor=detailsAlwaysOnTopRect_.right+10;
+        }else detailsAlwaysOnTopRect_=RECT{};
+        if(item.isVideo){imageDetailsSlideshowRect_=RECT{};playRect_={detailsLeftCursor,backRect_.top,detailsLeftCursor+48,backRect_.bottom};DrawLibraryGpuSvgIconButton(playRect_,playSvgBitmap_.get(),libraryD2dPlaySvg_,false,6);}else playRect_=RECT{};
         constexpr int footerIconW=48,footerGap=10,footerRightMargin=20;const int footerRight=std::max(0,static_cast<int>(rc.right)-footerRightMargin),iconBottom=rc.bottom-10,iconTop=iconBottom-footerIconW;
         detailsFullRect_={footerRight-footerIconW,iconTop,footerRight,iconBottom};DrawLibraryGpuFullscreenButton(detailsFullRect_);imageDetailsNativeRect_=RECT{};
         if(!item.isVideo){imageDetailsNativeRect_={detailsFullRect_.left-footerGap-footerIconW,iconTop,detailsFullRect_.left-footerGap,iconBottom};DrawDetailsGpuNativeSizeButton(imageDetailsNativeRect_);imageDetailsSlideshowRect_={imageDetailsNativeRect_.left-footerGap-footerIconW,iconTop,imageDetailsNativeRect_.left-footerGap,iconBottom};DrawLibraryGpuAutoAdvance(imageDetailsSlideshowRect_,slideshowActive_);}
         std::wstring meta=item.isVideo?(item.vr.vr?(item.vr.projection==2?L"VR180":L"VR"):L"Video"):L"Image";
         if(item.isVideo&&item.sourceWidth&&item.sourceHeight){meta+=L"  •  ";meta+=std::to_wstring(item.sourceWidth);meta+=L"×";meta+=std::to_wstring(item.sourceHeight);}
-        const LONG metaLeftLimit=item.isVideo?playRect_.right+20:backRect_.right+20,metaRightLimit=(item.isVideo?detailsFullRect_.left:imageDetailsSlideshowRect_.left)-20;
+        const LONG metaLeftAnchor=fullscreen_?backRect_.right:detailsAlwaysOnTopRect_.right;
+        const LONG metaLeftLimit=metaLeftAnchor+20,metaRightLimit=(item.isVideo?detailsFullRect_.left:imageDetailsSlideshowRect_.left)-20;
         const LONG metaLeft=std::max<LONG>(metaLeftLimit,rc.right/2-150),metaRight=std::max<LONG>(metaLeft+40,std::min<LONG>(metaRightLimit,rc.right/2+150));RECT metaTop{metaLeft,rc.bottom-62,metaRight,rc.bottom-43};
         DrawLibraryGpuText(meta,metaTop,13,FW_SEMIBOLD,RGB(165,172,185),DT_CENTER|DT_VCENTER|DT_SINGLELINE);
         if(item.isVideo){const double duration=detailsDurationSeconds_.load(std::memory_order_relaxed);RECT durationRect{metaTop.left,rc.bottom-43,metaTop.right,rc.bottom-8};DrawLibraryGpuText(duration>0.0?FormatTime(duration):L"--:--",durationRect,22,FW_SEMIBOLD,RGB(205,210,220),DT_CENTER|DT_VCENTER|DT_SINGLELINE);}
@@ -4917,10 +4933,28 @@ private:
         return GetAncestor(foreground,GA_ROOTOWNER)==hwnd_;
     }
 
+    bool IsHoverInteractionAllowed() const {
+        // Hover is visual/preview interaction, not activation.  Keep it live while VMP
+        // is visible under the cursor even when another app owns the foreground.  This
+        // deliberately stays separate from the activation-only first-click safeguard.
+        if(IsAppForegroundForHover()) return true;
+        if(!hwnd_) return false;
+        POINT cursor{};
+        if(!GetCursorPos(&cursor)) return false;
+        HWND under=WindowFromPoint(cursor);
+        if(!under) return false;
+        if(under==hwnd_) return true;
+        if(GetAncestor(under,GA_ROOT)==hwnd_) return true;
+        return GetAncestor(under,GA_ROOTOWNER)==hwnd_;
+    }
+
     bool ShouldEatForegroundActivationClick() const {
-        // Preserve the deliberate two-step activation only in browsing surfaces, where
-        // an accidental first click could select/open media. Once media is actually
-        // being viewed, the first click should both activate VMP and operate the UI.
+        // Always-on-top is an explicit request for immediate interaction even when VMP
+        // is not the foreground app, so never require the activation-only first click.
+        if(alwaysOnTop_) return false;
+        // Otherwise preserve the deliberate two-step activation only in browsing
+        // surfaces, where an accidental first click could select/open media. Once media
+        // is actually being viewed, the first click should both activate VMP and act.
         return mode_==Mode::Library || (mode_==Mode::Details && category_==Category::Videos);
     }
 
@@ -4939,7 +4973,7 @@ private:
     }
 
     float ButtonHoverAmount(RECT r) const {
-        if(!IsAppForegroundForHover()) return 0.0f;
+        if(!IsHoverInteractionAllowed()) return 0.0f;
         const ULONGLONG now = GetTickCount64();
         float t = 1.0f;
         if (hoverTransitionStart_ != 0)
@@ -5216,6 +5250,7 @@ private:
         // folder and restart the app; no resource edit and no rebuild are required.
         buttonBackgroundActiveBitmap_=LoadButtonAsset(L"Background_Active",0);
         buttonBackgroundInactiveBitmap_=LoadButtonAsset(L"Background_Inactive",0);
+        alwaysOnTopSvgBitmap_=LoadButtonAsset(L"AlwaysOnTop",IDR_ALWAYS_ON_TOP_SVG);
         autoNextSvgBitmap_=LoadButtonAsset(L"AutoNext",IDR_AUTONEXT_SVG);
         openFolderSvgBitmap_=LoadButtonAsset(L"OpenFolder",IDR_OPEN_FOLDER_SVG);
         reloadSvgBitmap_=LoadButtonAsset(L"Refresh",IDR_RELOAD_SVG);
@@ -5354,6 +5389,10 @@ private:
         DrawSvgIconButton(dc,r,fullscreen_?collapseFullscreenSvgBitmap_.get():expandFullscreenSvgBitmap_.get(),fullscreen_,6);
     }
 
+    void DrawAlwaysOnTopButton(HDC dc, RECT r) {
+        DrawSvgIconButton(dc,r,alwaysOnTopSvgBitmap_.get(),alwaysOnTop_,6);
+    }
+
     void DrawVrProjectionToggle(HDC dc, RECT r) {
         if (!player_ || !player_->VR().vr) return;
         const bool full360 = player_->IsVr360Enabled();
@@ -5422,6 +5461,7 @@ private:
 
         DrawSvgIconButton(dc,playerBackRect_,backSvgBitmap_.get(),false,5);
         DrawVrProjectionToggle(dc,playerVrToggleRect_);
+        if(!fullscreen_ && !IsRectEmpty(&playerAlwaysOnTopRect_)) DrawAlwaysOnTopButton(dc,playerAlwaysOnTopRect_);
         DrawSkip30Icon(dc,playerSkipBackRect_,false);
         DrawPlayPauseIcon(dc,playerPlayRect_);
         DrawSkip30Icon(dc,playerSkipForwardRect_,true);
@@ -7026,7 +7066,7 @@ private:
         size_t hoveredId=static_cast<size_t>(-1);
         bool validContext=false;
 
-        if(!IsAppForegroundForHover()){
+        if(!IsHoverInteractionAllowed()){
             if(libraryHoverPreviewLoadingSurface_!=MediaHoverSurface::None || !libraryHoverPreviewFrames_.empty())
                 CancelLibraryHoverPreviewRequest();
             libraryHoverPreviewPendingSurface_=MediaHoverSurface::None;
@@ -10573,7 +10613,7 @@ private:
         const int iconButtonBottom=rc.bottom-10;
         const int iconButtonTop=iconButtonBottom-iconW;
 
-        // Left side: optional folder Back, then one persistent Videos/Images toggle.
+        // Left side: optional folder Back, then Always on Top, then Videos/Images toggle.
         int navLeft = 20;
         if (!IsAtLibraryRoot()) {
             backRect_ = {20, iconButtonTop, 20+iconW, iconButtonBottom};
@@ -10582,7 +10622,12 @@ private:
         } else {
             backRect_ = RECT{};
         }
-        categoryToggleRect_ = {navLeft, iconButtonTop, navLeft + iconW, iconButtonBottom};
+        if(!fullscreen_){
+            libraryAlwaysOnTopRect_={navLeft,iconButtonTop,navLeft+iconW,iconButtonBottom};
+            DrawAlwaysOnTopButton(dc,libraryAlwaysOnTopRect_);
+            navLeft=libraryAlwaysOnTopRect_.right+10;
+        }else libraryAlwaysOnTopRect_=RECT{};
+        categoryToggleRect_={navLeft,iconButtonTop,navLeft+iconW,iconButtonBottom};
         DrawSvgIconButton(dc,categoryToggleRect_,category_==Category::Videos?videosSvgBitmap_.get():imageSvgBitmap_.get(),false,5);
         const std::wstring countText=L"("+std::to_wstring(CurrentFolderMediaCount())+L")";
         mediaCountRect_={categoryToggleRect_.right+10,buttonTop,categoryToggleRect_.right+110,buttonBottom};
@@ -10992,10 +11037,15 @@ private:
         detailsFooterRect_ = RECT{0, footerTop, rc.right, rc.bottom};
         PaintFooterBackground(dc, rc);
         backRect_={20,rc.bottom-58,68,rc.bottom-10}; DrawSvgIconButton(dc,backRect_,backSvgBitmap_.get(),false,5);
+        int detailsLeftCursor=backRect_.right+10;
+        if(!fullscreen_){
+            detailsAlwaysOnTopRect_={detailsLeftCursor,backRect_.top,detailsLeftCursor+48,backRect_.bottom};
+            DrawAlwaysOnTopButton(dc,detailsAlwaysOnTopRect_);
+            detailsLeftCursor=detailsAlwaysOnTopRect_.right+10;
+        }else detailsAlwaysOnTopRect_=RECT{};
         if(item.isVideo){
             imageDetailsSlideshowRect_=RECT{};
-            const int gap=10;
-            playRect_={backRect_.right+gap,backRect_.top,backRect_.right+gap+48,backRect_.bottom};
+            playRect_={detailsLeftCursor,backRect_.top,detailsLeftCursor+48,backRect_.bottom};
             DrawSvgIconButton(dc,playRect_,playSvgBitmap_.get(),false,6);
         } else {
             playRect_=RECT{};
@@ -11021,7 +11071,8 @@ private:
             meta += L"\u00D7";
             meta += std::to_wstring(item.sourceHeight);
         }
-        const LONG metaLeftLimit=item.isVideo?playRect_.right+20:backRect_.right+20;
+        const LONG metaLeftAnchor=fullscreen_?backRect_.right:detailsAlwaysOnTopRect_.right;
+        const LONG metaLeftLimit=metaLeftAnchor+20;
         const LONG metaRightLimit=(item.isVideo?detailsFullRect_.left:imageDetailsSlideshowRect_.left)-20;
         const LONG metaLeft=std::max<LONG>(metaLeftLimit,rc.right/2-150);
         const LONG metaRight=std::max<LONG>(metaLeft+40,std::min<LONG>(metaRightLimit,rc.right/2+150));
@@ -11349,6 +11400,7 @@ private:
                 SaveSettings(); PrepareLibraryViewportFromPrivateCache(); InvalidateRect(hwnd_,nullptr,FALSE); return;
             }
             if(category_==Category::Images && PtInRect(&slideshowRect_,p)){ StartImageSlideshow(); return; }
+            if(!fullscreen_ && PtInRect(&libraryAlwaysOnTopRect_,p)){ ToggleAlwaysOnTop(); return; }
             if(PtInRect(&libraryFullRect_,p)){ ToggleFullscreen(); return; }
             if(IsAtChosenLibraryRoot() && PtInRect(&loadEverythingRect_,p)){ StopImageSlideshow(); StartFullLoadEverything(); return; }
             if((IsAtChosenLibraryRoot() || currentFolder_.empty() || externalMediaSession_) && PtInRect(&chooseRect_,p)){ StopImageSlideshow(); ChooseFolder(); return; }
@@ -11409,6 +11461,7 @@ private:
                 return;
             }
             if(category_==Category::Images&&PtInRect(&imageDetailsNativeRect_,p)){ ToggleNativeImageSizing(); return; }
+            if(!fullscreen_ && PtInRect(&detailsAlwaysOnTopRect_,p)){ ToggleAlwaysOnTop(); return; }
             if(PtInRect(&detailsFullRect_,p)){ ToggleFullscreen(); return; }
 
             // Treat the entire footer as an input barrier, including its transparent/empty
@@ -12202,6 +12255,7 @@ private:
             if(hit(playerPlayRect_)) return true;
             if(hit(playerSkipForwardRect_)) return true;
             if(hit(playerAutoNextRect_)) return true;
+            if(!fullscreen_ && hit(playerAlwaysOnTopRect_)) return true;
             if(NativeVideoSizingAvailable() && hit(playerNativeSizeRect_)) return true;
             if(hit(playerFullRect_)) return true;
             return false;
@@ -12217,6 +12271,7 @@ private:
         if(mode_==Mode::Library){
             if(!IsAtLibraryRoot() && hit(backRect_)) return true;
             if(hit(categoryToggleRect_)) return true;
+            if(!fullscreen_ && hit(libraryAlwaysOnTopRect_)) return true;
             if(category_==Category::Images && hit(slideshowRect_)) return true;
             if(hit(libraryFullRect_)) return true;
             if(IsAtChosenLibraryRoot() && hit(loadEverythingRect_)) return true;
@@ -12229,14 +12284,15 @@ private:
             if(category_==Category::Videos && hit(playRect_)) return true;
             if(category_==Category::Images && hit(imageDetailsSlideshowRect_)) return true;
             if(category_==Category::Images && hit(imageDetailsNativeRect_)) return true;
+            if(!fullscreen_ && hit(detailsAlwaysOnTopRect_)) return true;
             if(hit(detailsFullRect_)) return true;
         }
         return false;
     }
 
     float MediaHoverAmount(MediaHoverSurface surface, size_t id, const RECT& visual) const {
-        if(!IsAppForegroundForHover()) return 0.0f;
         if(mediaHoverSurface_!=surface || mediaHoverId_!=id || EmptyRectValue(visual)) return 0.0f;
+        if(!IsHoverInteractionAllowed()) return 0.0f;
 
         // Validate against the real cursor position as well as mouse messages. This
         // prevents a stale border after scrolling, resizing, view changes, or a missed
@@ -12252,7 +12308,7 @@ private:
     }
 
     void SetMediaHoverTarget(MediaHoverSurface nextSurface,size_t nextId,RECT nextRect,bool found) {
-        if(!IsAppForegroundForHover()) found=false;
+        if(!IsHoverInteractionAllowed()) found=false;
         if(!found){
             nextSurface=MediaHoverSurface::None;
             nextId=static_cast<size_t>(-1);
@@ -12290,7 +12346,7 @@ private:
     }
 
     void UpdateMediaHover(int x,int y) {
-        if(!IsAppForegroundForHover()){ ClearMediaHoverImmediate(); return; }
+        if(!IsHoverInteractionAllowed()){ ClearMediaHoverImmediate(); return; }
         POINT p{x,y};
         MediaHoverSurface nextSurface=MediaHoverSurface::None;
         size_t nextId=static_cast<size_t>(-1);
@@ -12347,7 +12403,7 @@ private:
     }
 
     void UpdateAnimatedHover(HWND owner,int x,int y) {
-        if(!IsAppForegroundForHover()){ ResetAnimatedHoverImmediate(owner); return; }
+        if(!IsHoverInteractionAllowed()){ ResetAnimatedHoverImmediate(owner); return; }
         POINT p{x,y}; RECT next{}; HWND nextOwner=nullptr;
         if(FindAnimatedButtonRect(owner,p,next)) nextOwner=owner;
         if(nextOwner==hoverOwner_ && SameRect(next,hoverRect_)) return;
@@ -12815,17 +12871,21 @@ private:
                     volumeLeft-volumeButtonGap,volumeCenterY+volumeButtonSize/2};
             } else volumeLabelRect_=RECT{};
 
-            // Bottom action row: Back/VR stay on the left; session toggles stay on the right.
+            // Bottom action row: Back/VR/Always-on-top stay on the left; playback/session toggles stay on the right.
             // The groups are sized from the edges inward, so even a native-sized narrow
             // player cannot paint one button on top of another.
-            const int iconSize=(cw<300?44:48);
-            const int iconGap=(cw<300?5:6);
+            const int iconSize=(cw<300?40:48);
+            const int iconGap=(cw<300?4:6);
             const int iconBottom=oh-10;
             const int iconTop=iconBottom-iconSize;
             playerBackRect_={sidePad,iconTop,sidePad+iconSize,iconBottom};
+            int leftCursor=playerBackRect_.right+iconGap;
             if(player_ && player_->VR().vr){
-                playerVrToggleRect_={playerBackRect_.right+iconGap,iconTop,playerBackRect_.right+iconGap+iconSize,iconBottom};
+                playerVrToggleRect_={leftCursor,iconTop,leftCursor+iconSize,iconBottom};
+                leftCursor=playerVrToggleRect_.right+iconGap;
             }else playerVrToggleRect_=RECT{};
+            if(!fullscreen_) playerAlwaysOnTopRect_={leftCursor,iconTop,leftCursor+iconSize,iconBottom};
+            else playerAlwaysOnTopRect_=RECT{};
 
             playerFullRect_={cw-sidePad-iconSize,iconTop,cw-sidePad,iconBottom};
             int rightCursor=playerFullRect_.left-iconGap;
@@ -12838,7 +12898,13 @@ private:
             const int pad=20; seekRect_={pad,10+hoverStrip,cw-pad,30+hoverStrip};
             constexpr int rowDrop = 10;
             playerBackRect_={20,54+rowDrop+hoverStrip,68,102+rowDrop+hoverStrip};
-            playerVrToggleRect_={playerBackRect_.right+12,playerBackRect_.top,playerBackRect_.right+12+48,playerBackRect_.bottom};
+            int leftCursor=playerBackRect_.right+12;
+            if(player_ && player_->VR().vr){
+                playerVrToggleRect_={leftCursor,playerBackRect_.top,leftCursor+48,playerBackRect_.bottom};
+                leftCursor=playerVrToggleRect_.right+12;
+            }else playerVrToggleRect_=RECT{};
+            if(!fullscreen_) playerAlwaysOnTopRect_={leftCursor,playerBackRect_.top,leftCursor+48,playerBackRect_.bottom};
+            else playerAlwaysOnTopRect_=RECT{};
             playerPlayRect_={cw/2-27,50+rowDrop+hoverStrip,cw/2+27,104+rowDrop+hoverStrip};
             constexpr int skipSize=48;
             constexpr int skipGap=12;
@@ -12954,6 +13020,7 @@ private:
         if(!IsRectEmpty(&volumeLabelRect_) && PtInRect(&volumeLabelRect_,p)){TogglePlayerMute();return;}
         if(PtInRect(&playerBackRect_,p)){LeavePlayer();return;}
         if(player_ && player_->VR().vr && PtInRect(&playerVrToggleRect_,p)){player_->ToggleVrBackside();InvalidateControls();return;}
+        if(!fullscreen_ && PtInRect(&playerAlwaysOnTopRect_,p)){ToggleAlwaysOnTop();PlayerActivity(true);return;}
         if(PtInRect(&playerSkipBackRect_,p)){SkipPlaybackSeconds(-30.0);return;}
         if(PtInRect(&playerPlayRect_,p)){if(player_)player_->PlayPause();InvalidateControls();return;}
         if(PtInRect(&playerSkipForwardRect_,p)){SkipPlaybackSeconds(30.0);return;}
@@ -13277,6 +13344,14 @@ private:
         if(squareTop) DeleteObject(squareTop);
     }
 
+    void ToggleAlwaysOnTop() {
+        alwaysOnTop_=!alwaysOnTop_;
+        SetWindowPos(hwnd_,alwaysOnTop_?HWND_TOPMOST:HWND_NOTOPMOST,0,0,0,0,
+            SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
+        InvalidateRect(hwnd_,nullptr,FALSE);
+        InvalidateControls();
+    }
+
     void ToggleFullscreen() {
         const bool entering=!fullscreen_;
 
@@ -13297,23 +13372,23 @@ private:
         }
 
         if(entering){
-            if(mode_==Mode::Library){
-                // Like the Timeline grid, fullscreen starts from the same automatic seven-across
-                // default while preserving a custom windowed Library zoom for restoration on exit.
-                preFullscreenLibraryCardWidth_=libraryCardWidth_;
-                preFullscreenLibraryZoomOverridden_=libraryZoomOverridden_;
-                preFullscreenLibraryStateValid_=true;
-                libraryZoomOverridden_=false;
-            }
-            if(mode_==Mode::Details && category_==Category::Videos){
-                // Fullscreen starts from its automatic seven-across default without
-                // destroying a custom windowed Timeline size; restore it on exit.
-                preFullscreenPreviewCardWidth_=previewCardWidth_;
-                preFullscreenPreviewZoomOverridden_=previewZoomOverridden_;
-                preFullscreenPreviewStateValid_=true;
-                previewZoomOverridden_=false;
-                previewWheelRemainder_=0;
-            }
+            // Save both windowed grid states regardless of which screen is currently
+            // visible. A user can enter fullscreen in Library, move through Info/Player,
+            // and exit fullscreen from another screen. The old mode-gated save/restore
+            // path could then leave fullscreen-sized cards cached for the later windowed
+            // Library/Timeline, producing oversized cards (sometimes only two across).
+            preFullscreenLibraryCardWidth_=libraryCardWidth_;
+            preFullscreenLibraryZoomOverridden_=libraryZoomOverridden_;
+            preFullscreenLibraryStateValid_=true;
+            preFullscreenPreviewCardWidth_=previewCardWidth_;
+            preFullscreenPreviewZoomOverridden_=previewZoomOverridden_;
+            preFullscreenPreviewStateValid_=true;
+
+            // Fullscreen uses its own automatic grid defaults. Any user-selected
+            // windowed zoom is restored when fullscreen ends.
+            libraryZoomOverridden_=false;
+            previewZoomOverridden_=false;
+            previewWheelRemainder_=0;
         }
         fullscreen_=entering;
         if(fullscreen_){
@@ -13323,7 +13398,7 @@ private:
             GetMonitorInfoW(MonitorFromWindow(hwnd_,MONITOR_DEFAULTTONEAREST),&mi);
             const DWORD fsStyle=savedStyle_&~(WS_THICKFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_SYSMENU|WS_CAPTION);
             SetWindowLongPtrW(hwnd_,GWL_STYLE,fsStyle);
-            SetWindowPos(hwnd_,HWND_TOP,mi.rcMonitor.left,mi.rcMonitor.top,mi.rcMonitor.right-mi.rcMonitor.left,mi.rcMonitor.bottom-mi.rcMonitor.top,SWP_FRAMECHANGED);
+            SetWindowPos(hwnd_,alwaysOnTop_?HWND_TOPMOST:HWND_TOP,mi.rcMonitor.left,mi.rcMonitor.top,mi.rcMonitor.right-mi.rcMonitor.left,mi.rcMonitor.bottom-mi.rcMonitor.top,SWP_FRAMECHANGED);
             if(mode_==Mode::Library){
                 RECT libraryRc{}; GetClientRect(hwnd_,&libraryRc);
                 ApplyLibraryWidthForViewport(std::max(1,static_cast<int>(libraryRc.right-libraryRc.left)));
@@ -13331,31 +13406,47 @@ private:
         }else{
             SetWindowLongPtrW(hwnd_,GWL_STYLE,savedStyle_);
             SetWindowPos(hwnd_,nullptr,savedRect_.left,savedRect_.top,savedRect_.right-savedRect_.left,savedRect_.bottom-savedRect_.top,SWP_FRAMECHANGED|SWP_NOZORDER);
-            if(mode_==Mode::Library){
-                if(preFullscreenLibraryStateValid_){
-                    libraryCardWidth_=preFullscreenLibraryCardWidth_;
-                    libraryZoomOverridden_=preFullscreenLibraryZoomOverridden_;
+
+            // SetWindowPos above has restored the final windowed client geometry. Restore
+            // BOTH dormant grid states now, not just the currently visible mode. This is
+            // important when fullscreen is exited from Player/Info and Library is opened
+            // afterward. Re-snap overridden widths against the actual restored client
+            // width so a fullscreen pixel width can never survive as a 2-across windowed grid.
+            RECT restoredRc{}; GetClientRect(hwnd_,&restoredRc);
+            const int restoredClientW=std::max(1,static_cast<int>(restoredRc.right-restoredRc.left));
+
+            if(preFullscreenLibraryStateValid_){
+                libraryZoomOverridden_=preFullscreenLibraryZoomOverridden_;
+                if(libraryZoomOverridden_){
+                    const int across=LibraryAcrossForWidth(restoredClientW,preFullscreenLibraryCardWidth_);
+                    libraryCardWidth_=LibraryWidthForAcross(restoredClientW,across);
                 }else{
-                    libraryZoomOverridden_=false;
+                    libraryCardWidth_=DefaultLibraryCardWidthForViewport(restoredClientW);
                 }
-                preFullscreenLibraryCardWidth_=-1;
-                preFullscreenLibraryZoomOverridden_=false;
-                preFullscreenLibraryStateValid_=false;
+            }else{
+                libraryZoomOverridden_=false;
+                libraryCardWidth_=DefaultLibraryCardWidthForViewport(restoredClientW);
             }
-            if(mode_==Mode::Details && category_==Category::Videos){
-                if(preFullscreenPreviewStateValid_){
-                    previewCardWidth_=preFullscreenPreviewCardWidth_;
-                    previewZoomOverridden_=preFullscreenPreviewZoomOverridden_;
+            preFullscreenLibraryCardWidth_=-1;
+            preFullscreenLibraryZoomOverridden_=false;
+            preFullscreenLibraryStateValid_=false;
+
+            if(preFullscreenPreviewStateValid_){
+                previewZoomOverridden_=preFullscreenPreviewZoomOverridden_;
+                if(previewZoomOverridden_){
+                    const int across=PreviewAcrossForWidth(restoredClientW,preFullscreenPreviewCardWidth_);
+                    previewCardWidth_=PreviewWidthForAcross(restoredClientW,across);
                 }else{
-                    // If Details was entered while already fullscreen, windowed mode
-                    // returns to the normal seven-across default.
-                    previewZoomOverridden_=false;
+                    previewCardWidth_=PreviewWidthForAcross(restoredClientW,PreviewDefaultAcrossForCurrentMode());
                 }
-                previewWheelRemainder_=0;
-                preFullscreenPreviewCardWidth_=-1;
-                preFullscreenPreviewZoomOverridden_=false;
-                preFullscreenPreviewStateValid_=false;
+            }else{
+                previewZoomOverridden_=false;
+                previewCardWidth_=PreviewWidthForAcross(restoredClientW,PreviewDefaultAcrossForCurrentMode());
             }
+            previewWheelRemainder_=0;
+            preFullscreenPreviewCardWidth_=-1;
+            preFullscreenPreviewZoomOverridden_=false;
+            preFullscreenPreviewStateValid_=false;
         }
         ApplyMainWindowCornerPreference();
         if(!fullscreen_ && nativeVideoSizing_ && mode_==Mode::Player) ApplyNativeVideoWindowSize();
@@ -13396,11 +13487,11 @@ private:
     Category libraryReturnHighlightCategory_=Category::Videos; size_t libraryReturnHighlightIndex_=static_cast<size_t>(-1); ULONGLONG libraryReturnHighlightStart_=0; RECT libraryReturnHighlightRect_{};
     size_t timelineReturnHighlightMediaIndex_=static_cast<size_t>(-1); size_t timelineReturnHighlightIndex_=static_cast<size_t>(-1); ULONGLONG timelineReturnHighlightStart_=0; RECT timelineReturnHighlightRect_{}; bool pendingTimelineReturnFocus_=false; double pendingTimelineReturnSeconds_=0.0;
     std::unique_ptr<Gdiplus::Bitmap> resolution4kBitmap_,resolution5kBitmap_,resolution8kBitmap_,vrBadgeBitmap_,vrBadgeWhiteBitmap_,favoriteIconBitmap_;
-    std::unique_ptr<Gdiplus::Bitmap> autoNextSvgBitmap_,openFolderSvgBitmap_,reloadSvgBitmap_,loadEverythingSvgBitmap_,expandFullscreenSvgBitmap_,collapseFullscreenSvgBitmap_,backSvgBitmap_,imageSvgBitmap_,videosSvgBitmap_,nativeSvgBitmap_,previousSvgBitmap_,nextSvgBitmap_,volumeSvgBitmap_,volumeMuteSvgBitmap_,skip30SvgBitmap_,pauseSvgBitmap_,playSvgBitmap_,vrProjectionSvgBitmap_;
+    std::unique_ptr<Gdiplus::Bitmap> alwaysOnTopSvgBitmap_,autoNextSvgBitmap_,openFolderSvgBitmap_,reloadSvgBitmap_,loadEverythingSvgBitmap_,expandFullscreenSvgBitmap_,collapseFullscreenSvgBitmap_,backSvgBitmap_,imageSvgBitmap_,videosSvgBitmap_,nativeSvgBitmap_,previousSvgBitmap_,nextSvgBitmap_,volumeSvgBitmap_,volumeMuteSvgBitmap_,skip30SvgBitmap_,pauseSvgBitmap_,playSvgBitmap_,vrProjectionSvgBitmap_;
     std::unique_ptr<Gdiplus::Bitmap> rewindSvgBitmap_,forwardSvgBitmap_,buttonBackgroundActiveBitmap_,buttonBackgroundInactiveBitmap_;
     std::set<Gdiplus::Bitmap*> externalButtonAssets_;
     ComPtr<ID3D11Device> svgD3dDevice_; ComPtr<ID2D1Factory1> svgD2dFactory_; ComPtr<ID2D1Device> svgD2dDevice_; ComPtr<ID2D1DeviceContext5> svgD2dContext_;
-    RECT chooseRect_{},rescanRect_{},loadEverythingRect_{},categoryToggleRect_{},mediaCountRect_{},slideshowRect_{},imageDetailsSlideshowRect_{},imageDetailsNativeRect_{},backRect_{},playRect_{},searchBoxRect_{},libraryFooterRect_{},detailsFooterRect_{},libraryFullRect_{},detailsFullRect_{},previewZoomRect_{},detailsMediaRect_{},detailsPrevRect_{},detailsNextRect_{};
+    RECT chooseRect_{},rescanRect_{},loadEverythingRect_{},categoryToggleRect_{},libraryAlwaysOnTopRect_{},detailsAlwaysOnTopRect_{},mediaCountRect_{},slideshowRect_{},imageDetailsSlideshowRect_{},imageDetailsNativeRect_{},backRect_{},playRect_{},searchBoxRect_{},libraryFooterRect_{},detailsFooterRect_{},libraryFullRect_{},detailsFullRect_{},previewZoomRect_{},detailsMediaRect_{},detailsPrevRect_{},detailsNextRect_{};
     RECT libraryScrollTrackRect_{}, libraryScrollThumbRect_{}; bool libraryScrollDragging_=false; int libraryScrollDragOffset_=0; int libraryLastKnownMaxScroll_=0;
     std::map<uint64_t,HFONT> fontCache_; HDC backDC_{}; HBITMAP backBitmap_{}; HGDIOBJ backOldBitmap_{}; int backW_=0,backH_=0;
     HDC controlsBackDC_{}; HBITMAP controlsBackBitmap_{}; HGDIOBJ controlsBackOldBitmap_{}; int controlsBackW_=0,controlsBackH_=0;
@@ -13408,17 +13499,17 @@ private:
     std::map<uint64_t,ComPtr<IDWriteTextFormat>> libraryDWriteFormats_;
     ComPtr<ID2D1SolidColorBrush> libraryD2dCardBrush_,libraryD2dPlaceholderBrush_,libraryD2dUiBrush_;
     ComPtr<ID2D1Bitmap> libraryD2dFavoriteIcon_,libraryD2dVrIcon_,libraryD2dResolution4k_,libraryD2dResolution5k_,libraryD2dResolution8k_;
-    ComPtr<ID2D1Bitmap> libraryD2dAutoNextSvg_,libraryD2dOpenFolderSvg_,libraryD2dReloadSvg_,libraryD2dLoadEverythingSvg_,libraryD2dExpandFullscreenSvg_,libraryD2dCollapseFullscreenSvg_,libraryD2dBackSvg_,libraryD2dImageSvg_,libraryD2dVideosSvg_,libraryD2dNativeSvg_,libraryD2dPreviousSvg_,libraryD2dNextSvg_,libraryD2dPlaySvg_;
+    ComPtr<ID2D1Bitmap> libraryD2dAlwaysOnTopSvg_,libraryD2dAutoNextSvg_,libraryD2dOpenFolderSvg_,libraryD2dReloadSvg_,libraryD2dLoadEverythingSvg_,libraryD2dExpandFullscreenSvg_,libraryD2dCollapseFullscreenSvg_,libraryD2dBackSvg_,libraryD2dImageSvg_,libraryD2dVideosSvg_,libraryD2dNativeSvg_,libraryD2dPreviousSvg_,libraryD2dNextSvg_,libraryD2dPlaySvg_;
     ComPtr<ID2D1Bitmap> libraryD2dButtonBackgroundActive_,libraryD2dButtonBackgroundInactive_;
     uint64_t libraryD2dGeneration_=1; int libraryD2dWidth_=0,libraryD2dHeight_=0; bool detailsGpuWorkingSetActive_=false;
     HWND videoHwnd_{},controlsHwnd_{}; std::unique_ptr<NativePlayer> player_;
     BYTE controlsAlpha_=0,controlsFadeFrom_=0,controlsFadeTo_=0; ULONGLONG controlsFadeStart_=0; bool controlsFading_=false;
     HWND playerFooterTransitionHwnd_{}; HBITMAP playerFooterTransitionBitmap_{}; ULONGLONG playerFooterTransitionStart_=0;
-    RECT playerBackRect_{},playerVrToggleRect_{},playerSkipBackRect_{},playerPlayRect_{},playerSkipForwardRect_{},playerFullRect_{},playerNativeSizeRect_{},playerAutoNextRect_{},seekRect_{},volumeRect_{},volumeLabelRect_{},playerTimeRect_{};
+    RECT playerBackRect_{},playerVrToggleRect_{},playerAlwaysOnTopRect_{},playerSkipBackRect_{},playerPlayRect_{},playerSkipForwardRect_{},playerFullRect_{},playerNativeSizeRect_{},playerAutoNextRect_{},seekRect_{},volumeRect_{},volumeLabelRect_{},playerTimeRect_{};
     RECT nativeSizingRestoreRect_{}; bool nativeSizingRestoreRectValid_=false;
     RECT nativeImageSizingRestoreRect_{}; bool nativeImageSizingRestoreRectValid_=false;
     float imageZoomScale_=1.0f,imageZoomCenterU_=0.5f,imageZoomCenterV_=0.5f; bool imageZoomDragging_=false; POINT imageZoomLastPoint_{};
-    double seekFraction_=0.0,volumeFraction_=0.30,lastAudibleVolumeFraction_=0.30; bool fullscreen_=false,seekDragging_=false,volumeDragging_=false,autoNext_=false,nativeVideoSizing_=false,nativeImageSizing_=false,playerControlsVisible_=false;
+    double seekFraction_=0.0,volumeFraction_=0.30,lastAudibleVolumeFraction_=0.30; bool fullscreen_=false,alwaysOnTop_=false,seekDragging_=false,volumeDragging_=false,autoNext_=false,nativeVideoSizing_=false,nativeImageSizing_=false,playerControlsVisible_=false;
     bool seekHoverVisible_=false; int seekHoverX_=0;
     ULONGLONG controlsHideDeadline_=0; POINT lastCursorScreen_{}; bool lastCursorValid_=false; DWORD savedStyle_{}; RECT savedRect_{};
     bool comInitialized_=false,mfStarted_=false; ULONG_PTR gdiplusToken_=0; std::thread thumbThread_; std::atomic<bool> thumbStop_{false}; std::atomic<bool> thumbWorkerRunning_{false}; std::atomic<bool> thumbRepairRequested_{false};
