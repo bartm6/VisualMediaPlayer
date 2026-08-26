@@ -1,0 +1,14 @@
+BUTTON ASSET SLOTS
+==================
+
+Portable build:
+  VisualMediaPlayer-main\Portable\ButtonAssets\
+
+Installer source:
+  VisualMediaPlayer-main\Installer\ButtonAssets\
+
+The app keeps the built-in visuals until you add a replacement file.
+Drop a PNG or SVG into ButtonAssets using the slot name, then restart the app.
+Example: Play.png, Back.svg, Background_Inactive.svg.
+
+See ButtonAssets\README.txt for every slot name.
