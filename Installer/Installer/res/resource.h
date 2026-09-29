@@ -1,0 +1,5 @@
+﻿#pragma once
+#define IDI_APP_ICON 101
+#define IDR_APP_PAYLOAD 201
+#define IDR_BUTTON_ASSET_README 220
+#define VS_VERSION_INFO 1
